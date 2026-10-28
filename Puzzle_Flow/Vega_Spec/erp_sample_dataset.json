@@ -1,0 +1,40 @@
+{
+  "name": "dataset",
+  "values": [
+        {"id": "P1", "label": "Project Initiation", "progress": 1,   "parent": null,
+         "description": "Kick-off meeting, stakeholder alignment, and project charter sign-off"},
+
+        {"id": "P2", "label": "Requirements Gathering", "progress": 1, "parent": "P1",
+         "description": "Business process mapping, current-state analysis, and functional requirement documentation"},
+
+        {"id": "P3", "label": "Solution Design", "progress": 1, "parent": "P1",
+         "description": "Architecture design, module selection, and technical specification review"},
+
+        {"id": "M1", "label": "GL Configuration", "progress": 0.9, "parent": "P3",
+         "description": "Chart of accounts setup, fiscal calendar definition, reporting currency config"},
+
+        {"id": "M2", "label": "AP Setup", "progress": 0.75, "parent": "P3",
+         "description": "Vendor master data design, payment terms, approval workflow definition"},
+
+        {"id": "M3", "label": "AR Setup", "progress": 0.45, "parent": "P3",
+         "description": "Customer classification, credit limit rules, invoicing template configuration"},
+
+        {"id": "M4", "label": "Inventory Module", "progress": 0.2, "parent": "P3",
+         "description": "Item master setup, warehouse structure definition, barcode integration planning"},
+
+        {"id": "T1", "label": "Data Migration", "progress": 0.55, "parent": "M4",
+         "description": "Extract legacy data, cleanse records, and map to new ERP data model"},
+
+        {"id": "T2", "label": "Validation & UAT", "progress": 0.15, "parent": "M4",
+         "description": "User acceptance testing, data accuracy verification, sign-off preparation"},
+
+        {"id": "D1", "label": "End-User Training", "progress": 0.1, "parent": "T2",
+         "description": "Train-the-trainer sessions, user manual creation, training schedule finalization"},
+
+        {"id": "D2", "label": "Cutover & Go-Live", "progress": 0, "parent": "D1",
+         "description": "Final data load, system cutover execution, hyper-care support period setup"},
+
+        {"id": "D3", "label": "Post-Go-Live Support", "progress": 0, "parent": "D2",
+         "description": "Issue tracking, performance monitoring, lessons learned documentation"}
+  ]
+}

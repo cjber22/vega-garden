@@ -1,0 +1,58 @@
+table input_data
+	lineageTag: 6980992f-1736-48c9-b97f-e9159020e739
+
+	column id
+		dataType: string
+		lineageTag: 81f196d0-4b93-4edd-8d1c-6d8fc8d6b101
+		summarizeBy: none
+		sourceColumn: id
+
+		annotation SummarizationSetBy = Automatic
+
+	column label
+		dataType: string
+		lineageTag: 7bc94c2a-dd8f-4e7c-895d-649504f13694
+		summarizeBy: none
+		sourceColumn: label
+
+		annotation SummarizationSetBy = Automatic
+
+	column progress
+		dataType: double
+		formatString: 0%;-0%;0%
+		lineageTag: be11b0d6-a238-43af-ba79-d055b59027e7
+		summarizeBy: sum
+		sourceColumn: progress
+
+		changedProperty = DataType
+
+		annotation SummarizationSetBy = Automatic
+
+	column parent
+		dataType: string
+		lineageTag: 36c7b824-f225-4b25-97de-e6a89dac49fa
+		summarizeBy: none
+		sourceColumn: parent
+
+		annotation SummarizationSetBy = Automatic
+
+	column description
+		dataType: string
+		lineageTag: 148ed2a0-759f-457a-99c3-39699c0119b2
+		summarizeBy: none
+		sourceColumn: description
+
+		annotation SummarizationSetBy = Automatic
+
+	partition input_data = m
+		mode: import
+		source =
+				let
+				  Source = Table.FromRows(Json.Document(Binary.Decompress(Binary.FromText("XZTLbtswEEV/hfCiK6to0gRFl26SBkYTwMhrE2TBUiObNUWqQ9KO+/W9Q8qPdmGJIMU5d+7M+PV1sjibTCcLDr/IJDX3NlmdbPDYlAOfncPrhzXrJnSd6omS9cupikmvaRVcS6y0s0vfk09TpX2rhjGYWWlOOI44lcuTtylw5wj3QL+zZZIrUd3qtCJG0BFZBH3L0XqKUYIZefd6GArYZGbcayAgEXja7aKNldxlb0S8doqPCNUGk2VREysqPoPxGFyWHXVNIvEUP2OzsglJZCbVluOp6kObHalIjgqlMvHVylsDZBzI2A7LEpRpY2lbaPcS8vZOXQXf2WXmvcGfPn4VoGi5Eq9U6JQ2JmSxJVLKw1R1Nkps/Mi3miGms1IkwTMNgaUcoylmp0xBVKo4PVuoRwlUaF8u97gXBAsMU6MUqNVJH7Ic9K6YhoNebB1QgQ0UbAOvOxe2JwoqRuLNHk4wFwfMVY4p9CAYp2M8eIMiMrU2KWd7PBmugmT9Jlgj2STqByfVNf8YVmgXCDv3GygMvFP3pSSFer6HznF9n9lo4lYzejVHFC9x3lf1aORPzSa0BAmJlpWmoMB76UrBPkkFr8Wme7s8qd+lpFo03bwn1mh6R0uNOoilSNOR9qAymcDt2KToZJWC8rRVNw+Laj5ai1wlSR4vmKi2yvignmdPhXV2YD1HGTpjaEjaG4JfsQ5liYUDOAYNG0zV0fL9FGKiaNAnll5Lbje+bUrYJ9bW12EEEs8iqOw2mNMmyao4i4IGj5yyXOu1z9KmTCMujXFUNCsqcwO7kdafE/B5aZEUIBR53obmzm5KMcVsYX+XKzUrF3SLJHZRqmvGS/ROJlfeajcQNwaFVjEPMhcKGza0tQcqUNpjEWJqRpZ6rJ/umSJoHmMmkW/WxVNE6QL3xeg+oGMCl330bET+eGv21P7/J/P2Fw==", BinaryEncoding.Base64), Compression.Deflate)), let _t = ((type nullable text) meta [Serialized.Text = true]) in type table [id = _t, label = _t, progress = _t, parent = _t, description = _t]),
+				  #"Changed column type" = Table.TransformColumnTypes(Source, {{"parent", type nullable text}}),
+				  #"Replaced value" = Table.ReplaceValue(#"Changed column type", "null", null, Replacer.ReplaceValue, {"parent"})
+				in
+				  #"Replaced value"
+
+	annotation PBI_ResultType = Table
+

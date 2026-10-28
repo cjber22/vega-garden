@@ -1,0 +1,325 @@
+{
+  "$schema": "https://vega.github.io/schema/vega/v6.json",
+  "description": "A Vega specification depicting a small ERP implementation project flow as interlocking puzzle pieces. By Christian Bermudez : https://www.linkedin.com/in/cjber/",
+  "width": 850,
+  "height": 400,
+  "padding": 30,
+  "autosize": "pad",
+
+  "signals": [            
+    {"name": "colSpacing", "value": 140},
+    {"name": "rowSpacing", "value": 95},
+    {"name": "colOffset", "value": 80},
+    {"name": "rowOffset", "value": 90},
+    {"name": "wrapBoxChars", "value": 14},
+    {"name": "legendX", "update": "colOffset"},
+    {"name": "legendY", "update": "taskYExtent[1] + rowOffset + rowSpacing * 0.6"},
+    {"name": "legendWidth", "value": 300},
+    {"name": "legendHeight", "value": 20},
+    {"name": "notchStartV", "update": "rowSpacing / 3"},
+    {"name": "notchStartH", "update": "colSpacing / 3"},
+    {"name": "notchHeightV", "update": "colSpacing / 2"},
+    {"name": "notchHeightH", "update": "rowSpacing / 2"},    
+    {
+      "name": "pathVal", 
+      "update": "'M0,0L0,' + notchStartV + 'q' + notchHeightH + ',' + (notchHeightH/3) + ' 0,' + (notchStartV) + 'L0,' + (3 * notchStartV) + 'L' + notchStartH + ',' + (3 * notchStartV) + 'q' + (notchHeightV/3) + ',' + (-notchHeightV/3) + ' ' + (notchStartH) + ',' + (0) + 'L' + (3 * notchStartH) + ',' + (3 * notchStartV) + 'L' + (3 * notchStartH) + ',' + (2 * notchStartV) + 'q' + (notchHeightH) + ',' + (-notchHeightH/3) + ' ' + (0) + ',' + (-notchStartV) + 'L' + (3 * notchStartH) + ',0' + 'L' + (2 * notchStartH) + ',0' + 'q' + (-notchHeightV/3) + ',' + (-notchHeightV/3) + ' ' + (-notchStartH) + ',0Z'"
+    }
+  ],
+
+  "scales": [
+    {
+      "name": "progressColor",
+      "type": "sqrt",
+      "domain": [0, 0.01, 0.5, 0.99, 1],
+      "range": ["#f8ffd4", "#f7f7f7", "#b1d7f2", "#97db94", "#70ad6e"],
+      "interpolate": "rgb"
+    }
+  ],
+
+  "data": [
+    {
+      "name": "dataset",
+      "values": [
+        {"id": "P1", "label": "Project Initiation", "progress": 1,   "parent": null,
+         "description": "Kick-off meeting, stakeholder alignment, and project charter sign-off"},
+
+        {"id": "P2", "label": "Requirements Gathering", "progress": 1, "parent": "P1",
+         "description": "Business process mapping, current-state analysis, and functional requirement documentation"},
+
+        {"id": "P3", "label": "Solution Design", "progress": 1, "parent": "P1",
+         "description": "Architecture design, module selection, and technical specification review"},
+
+        {"id": "M1", "label": "GL Configuration", "progress": 0.9, "parent": "P3",
+         "description": "Chart of accounts setup, fiscal calendar definition, reporting currency config"},
+
+        {"id": "M2", "label": "AP Setup", "progress": 0.75, "parent": "P3",
+         "description": "Vendor master data design, payment terms, approval workflow definition"},
+
+        {"id": "M3", "label": "AR Setup", "progress": 0.45, "parent": "P3",
+         "description": "Customer classification, credit limit rules, invoicing template configuration"},
+
+        {"id": "M4", "label": "Inventory Module", "progress": 0.2, "parent": "P3",
+         "description": "Item master setup, warehouse structure definition, barcode integration planning"},
+
+        {"id": "T1", "label": "Data Migration", "progress": 0.55, "parent": "M4",
+         "description": "Extract legacy data, cleanse records, and map to new ERP data model"},
+
+        {"id": "T2", "label": "Validation & UAT", "progress": 0.15, "parent": "M4",
+         "description": "User acceptance testing, data accuracy verification, sign-off preparation"},
+
+        {"id": "D1", "label": "End-User Training", "progress": 0.1, "parent": "T2",
+         "description": "Train-the-trainer sessions, user manual creation, training schedule finalization"},
+
+        {"id": "D2", "label": "Cutover & Go-Live", "progress": 0, "parent": "D1",
+         "description": "Final data load, system cutover execution, hyper-care support period setup"},
+
+        {"id": "D3", "label": "Post-Go-Live Support", "progress": 0, "parent": "D2",
+         "description": "Issue tracking, performance monitoring, lessons learned documentation"}
+      ]
+    },
+    {
+      "name": "___zero_set___",
+      "values": [{"__row__": null,"id": "___zero___", "parent": null}]
+    },
+    {
+      "name": "tasks_raw",
+      "source": ["___zero_set___", "dataset"],
+      "transform": [
+        {
+          "type": "formula",
+          "as": "parentNew",
+          "expr": "if(datum.parent === null && datum.id != \"___zero___\", \"___zero___\", datum.parent)"
+        },
+        {"type": "stratify", "key": "id", "parentKey": "parentNew"},
+        {"type": "tree", "method": "tidy", "size": [{"signal": "width"}, {"signal": "height"}]},
+        {"type": "filter", "expr": "datum.id !== \"___zero___\""},
+        {
+          "type": "collect",
+          "sort": {
+            "field": ["depth", "parent"],
+            "order": ["descending", "ascending"]
+          }
+        }
+      ]
+    },
+    {
+      "name": "depth_counts",
+      "source": "tasks_raw",
+      "transform": [
+        {"type": "aggregate", "groupby": ["depth"], "ops": ["count"], "fields": ["id"], "as": ["deptCnt"]}
+      ]
+    },
+    {
+      "name": "tasks",
+      "source": "tasks_raw",
+      "transform": [
+        {"type": "lookup", "from": "depth_counts", "key": "depth", "fields": ["depth"], "values": ["deptCnt"], "as": ["depthCount"]},
+        {"type": "formula", "as": "maxRows", "expr": "max(datum.depthCount)"},
+        {"type": "formula", "as": "col", "expr": "datum.depth - 1"},
+        {"type": "window", "ops": ["row_number"], "fields": [null], "as": ["idx"]},
+        {"type": "formula", "as": "row", "expr": "(datum.idx - 1) % datum.maxRows"},
+        {"type": "formula", "as": "x", "expr": "colOffset + datum.col * colSpacing"},
+        {"type": "formula", "as": "y", "expr": "rowOffset + datum.row * rowSpacing"},
+        {
+          "type": "formula",
+          "as": "labelWrapped",
+          "expr": "replace(datum.label, regexp('(.{1,' + wrapBoxChars + '})\\\\s+|(.{' + wrapBoxChars + '}\\\\S*)\\\\s+', 'g'), '$1$2\\n')"
+        },
+        {"type": "lookup", "from": "tasks_raw", "key": "id", "fields": ["parent"], "values": ["label"], "as": ["parentLabel"]}
+      ]
+    },
+    {
+      "name": "links_data",
+      "source": "tasks_raw",
+      "transform": [
+        {"type": "treelinks"},
+        {"type": "lookup", "from": "tasks", "key": "id", "fields": ["source.id"], "values": ["x", "y"], "as": ["x1", "y1"]},
+        {"type": "lookup", "from": "tasks", "key": "id", "fields": ["target.id"], "values": ["x", "y"], "as": ["x2", "y2"]}
+      ]
+    },
+    {
+      "name": "task_bounds",
+      "source": "tasks",
+      "transform": [
+        {"type": "extent", "field": "x", "signal": "taskXExtent"},
+        {"type": "extent", "field": "y", "signal": "taskYExtent"}
+      ]
+    },
+    {
+      "name": "legend_values",
+      "values": [
+        {"progress": 0.0}, {"progress": 0.1}, {"progress": 0.2},
+        {"progress": 0.3}, {"progress": 0.4}, {"progress": 0.5},
+        {"progress": 0.6}, {"progress": 0.7}, {"progress": 0.8},
+        {"progress": 0.9}, {"progress": 1.0}
+      ]
+    }
+  ],
+
+  "marks": [
+    {
+      "name": "puzzle_pieces",
+      "type": "path",
+      "from": {"data": "tasks"},
+      "encode": {
+        "enter": {
+          "fill": {"scale": "progressColor", "field": "progress"},
+          "stroke": {"value": "#333"},
+          "strokeWidth": {"value": 2},
+          "tooltip": {
+            "signal": "{'Task': datum.label, 'Description': datum.description, 'Parent': datum.parentLabel === null ? '—' : datum.parentLabel, 'Progress': format(datum.progress, '0.0%')}"
+          }
+        },
+        "update": {
+          "x": {"field": "x"},
+          "y": {"field": "y"},
+          "path": {"signal": "pathVal"}
+        }
+      }
+    },
+    {
+      "name": "labels",
+      "type": "text",
+      "from": {"data": "tasks"},
+      "encode": {
+        "enter": {
+          "fill": {"value": "#000"},
+          "fontSize": {"value": 13},
+          "fontWeight": {"value": "bold"},
+          "align": {"value": "center"},
+          "baseline": {"value": "bottom"},
+          "lineBreak": {"value": "\n"},
+          "lineHeight": {"value": 15}
+        },
+        "update": {
+          "x": {"field": "x", "offset": {"signal": "colSpacing/2"}},
+          "y": {"field": "y", "offset": {"signal": "rowSpacing/2"}},
+          "text": {"field": "labelWrapped"}
+        }
+      }
+    },
+    {
+      "name": "connections",
+      "type": "rule",
+      "from": {"data": "links_data"},
+      "encode": {
+        "enter": {
+          "x": {"field": "x1"}, "y": {"field": "y1"},
+          "x2": {"field": "x2"}, "y2": {"field": "y2"},
+          "stroke": {"value": "#ebebeb52"},
+          "strokeWidth": {"value": 2},
+          "strokeDash": {"value": [6, 4]}
+        }
+      }
+    },
+    {
+      "name": "legend_gradient",
+      "type": "group",
+      "encode": {
+        "enter": {
+          "background": {"value": "#fff"},
+          "fill": {"value": "none"}
+        }
+      },
+      "marks": [
+        {
+          "name": "legend_rects",
+          "type": "rect",
+          "from": {"data": "legend_values"},
+          "encode": {
+            "enter": {
+              "fill": {"scale": "progressColor", "field": "progress"},
+              "stroke": {"value": "#ccc"}
+            },
+            "update": {
+              "x": {"signal": "legendX + datum.progress * legendWidth"},
+              "y": {"signal": "legendY"},
+              "width": {"signal": "legendWidth / 10"},
+              "height": {"signal": "legendHeight"}
+            }
+          }
+        },
+        {
+          "name": "legend_label_start",
+          "type": "text",
+          "encode": {
+            "enter": {
+              "fill": {"value": "#333"},
+              "fontSize": {"value": 10},
+              "align": {"value": "left"}
+            },
+            "update": {
+              "x": {"signal": "legendX"},
+              "y": {"signal": "legendY + legendHeight + 20"},
+              "text": {"value": ["Not Started"]}
+            }
+          }
+        },
+        {
+          "name": "legend_label_mid",
+          "type": "text",
+          "encode": {
+            "enter": {
+              "fill": {"value": "#333"},
+              "fontSize": {"value": 12},
+              "align": {"value": "center"}
+            },
+            "update": {
+              "x": {"signal": "legendX + 0.55 * legendWidth"},
+              "y": {"signal": "legendY - 5"},
+              "text": {"value": ["Progress"]}
+            }
+          }
+        },
+        {
+          "name": "legend_label_end",
+          "type": "text",
+          "encode": {
+            "enter": {
+              "fill": {"value": "#333"},
+              "fontSize": {"value": 10},
+              "align": {"value": "right"}
+            },
+            "update": {
+              "x": {"signal": "legendX + legendWidth * 1.1"},
+              "y": {"signal": "legendY + legendHeight + 20"},
+              "text": {"value": ["Completed"]}
+            }
+          }
+        },
+        {
+          "name": "legend_tick_start",
+          "type": "rule",
+          "encode": {
+            "enter": {
+              "stroke": {"value": "#333"},
+              "strokeWidth": {"value": 2}
+            },
+            "update": {
+              "x": {"signal": "legendX + 0.5"},
+              "y": {"signal": "legendY - 4"},
+              "x2": {"signal": "legendX + 0.5"},
+              "y2": {"signal": "legendY + legendHeight + 4"}
+            }
+          }
+        },
+        {
+          "name": "legend_tick_end",
+          "type": "rule",
+          "encode": {
+            "enter": {
+              "stroke": {"value": "#333"},
+              "strokeWidth": {"value": 2}
+            },
+            "update": {
+              "x": {"signal": "legendX + legendWidth * 1.1"},
+              "y": {"signal": "legendY - 4"},
+              "x2": {"signal": "legendX + legendWidth * 1.1"},
+              "y2": {"signal": "legendY + legendHeight + 4"}
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
